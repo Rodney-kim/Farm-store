@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
-import { getProducts, createProduct, deleteProduct } from "../services/api.js";
+import { getProducts, createProduct, deleteProduct, getOrders } from "../services/api.js";
 
 const emptyForm = {
   name: "",
@@ -16,6 +16,7 @@ const emptyForm = {
 export default function Admin() {
   const { isAdmin } = useAuth();
   const [products, setProducts] = useState([]);
+  const [orders, setOrders] = useState([]); // NEW
   const [form, setForm] = useState(emptyForm);
   const [error, setError] = useState("");
 
@@ -27,8 +28,20 @@ export default function Admin() {
     }
   }
 
+  // NEW
+  async function loadOrders() {
+    try {
+      setOrders(await getOrders());
+    } catch (err) {
+      setError(err.message);
+    }
+  }
+
   useEffect(() => {
-    if (isAdmin) loadProducts();
+    if (isAdmin) {
+      loadProducts();
+      loadOrders(); // NEW
+    }
   }, [isAdmin]);
 
   if (!isAdmin) {
@@ -73,6 +86,11 @@ export default function Admin() {
     }
   }
 
+  // NEW: total of everything that has been paid
+  const paidTotal = orders
+    .filter((o) => o.paymentStatus === "paid")
+    .reduce((sum, o) => sum + o.totalAmount, 0);
+
   return (
     <div className="container" style={{ padding: "2rem 1rem" }}>
       <h1>Admin: Products</h1>
@@ -101,6 +119,42 @@ export default function Admin() {
           </li>
         ))}
       </ul>
+
+      {/* NEW: orders and payments */}
+      <h2 style={{ marginTop: "2rem" }}>Orders & Payments ({orders.length})</h2>
+      <p>Total paid: KSh {paidTotal}</p>
+      <div style={{ overflowX: "auto" }}>
+        <table style={{ width: "100%", borderCollapse: "collapse" }}>
+          <thead>
+            <tr style={{ textAlign: "left", borderBottom: "2px solid #ddd" }}>
+              <th style={{ padding: "0.5rem" }}>Order</th>
+              <th style={{ padding: "0.5rem" }}>Customer</th>
+              <th style={{ padding: "0.5rem" }}>Amount</th>
+              <th style={{ padding: "0.5rem" }}>Payment</th>
+              <th style={{ padding: "0.5rem" }}>M-Pesa code</th>
+              <th style={{ padding: "0.5rem" }}>Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            {orders.map((o) => (
+              <tr key={o._id} style={{ borderBottom: "1px solid #ddd" }}>
+                <td style={{ padding: "0.5rem" }}>#{o._id.slice(-6).toUpperCase()}</td>
+                <td style={{ padding: "0.5rem" }}>
+                  {o.customerName}
+                  <br />
+                  <small>{o.phone}</small>
+                </td>
+                <td style={{ padding: "0.5rem" }}>KSh {o.totalAmount}</td>
+                <td style={{ padding: "0.5rem" }}>{o.paymentStatus || "unpaid"}</td>
+                <td style={{ padding: "0.5rem" }}>{o.mpesaReceipt || "-"}</td>
+                <td style={{ padding: "0.5rem" }}>
+                  {new Date(o.paidAt || o.createdAt).toLocaleString()}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }

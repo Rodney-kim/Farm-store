@@ -38,7 +38,6 @@ async function request(path, options = {}) {
   try {
     data = await response.json();
   } catch {
-    // Response had no JSON body (rare, but don't crash on it).
   }
 
   if (!response.ok) {
@@ -76,6 +75,17 @@ export function createOrder(order) {
 
 export function getOrderById(id) {
   return request(`/orders/${id}`);
+}
+
+export function getOrders() {
+  return request("/orders");
+}
+
+export function startMpesaPayment({ orderId, phone }) {
+  return request("/mpesa/stkpush", {
+    method: "POST",
+    body: JSON.stringify({ orderId, phone }),
+  });
 }
 
 // ---- Auth ----

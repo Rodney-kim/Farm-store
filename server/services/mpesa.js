@@ -52,7 +52,7 @@ export async function stkPush({ phone, amount, orderId }) {
     // For a Till (Buy Goods) this is the till number; for Paybill it is the shortcode.
     PartyB: process.env.MPESA_PARTYB || shortcode,
     PhoneNumber: phone,
-    CallBackURL: `${process.env.MPESA_CALLBACK_BASE}/api/mpesa/callback/${process.env.MPESA_CALLBACK_SECRET}`,
+    CallBackURL: `${process.env.MPESA_CALLBACK_BASE}/api/pay/callback/${process.env.MPESA_CALLBACK_SECRET}`,
     AccountReference: `FS${String(orderId).slice(-8).toUpperCase()}`,
     TransactionDesc: "FarmStore",
   };

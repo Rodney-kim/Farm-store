@@ -30,6 +30,7 @@ app.use("/api/orders", orderRoutes);
 app.use("/api/categories", categoryRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/mpesa", mpesaRoutes);
+app.use("/api/pay", mpesaRoutes);
 
 // Keep these two LAST: notFound catches unmatched routes, and
 // errorHandler catches everything passed to next(error) above.
